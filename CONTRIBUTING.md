@@ -1,6 +1,6 @@
 # Contributing
 
-AppLauncher is a small Windows-first utility. Bug reports, usability feedback, and focused pull requests are welcome.
+AppLauncher is a Windows application launcher. Bug reports, usability feedback, and focused pull requests are welcome.
 
 ## Development setup
 
@@ -12,7 +12,7 @@ dotnet restore .\AppLauncher.sln
 dotnet build .\AppLauncher.sln -c Release --no-restore
 ```
 
-Please test changes on Windows 11 x64 when possible. ARM64 is cross-built in CI but is not treated as hardware-tested without a physical ARM64 device.
+Please test changes on Windows 11 x64 when possible. Describe ARM64 validation as cross-build and package checks unless it was tested on ARM64 hardware.
 
 ## Pull requests
 

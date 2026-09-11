@@ -1,6 +1,6 @@
 # Security
 
-AppLauncher is local-first and does not provide a network upload or automatic update service. It can discover and launch local executables, including an explicit administrator-launch action.
+AppLauncher discovers and launches local executables and can start them with administrator privileges.
 
 Please do not publish crash logs, diagnostic logs, configuration files, or screenshots containing usernames, application paths, or other personal information in a public Issue.
 

@@ -4,7 +4,7 @@
 
 > English：[README.md](README.md)
 
-AppLauncher 用键盘和鼠标快速查找、启动本机软件，不需要账号，也不要求维护在线应用目录。它扫描 Windows 本地常见应用位置，在本机保存索引，并常驻通知区域等待调用。
+AppLauncher 是一款轻量的 Windows 应用启动器，支持通过键盘和鼠标快速查找、启动本机应用，无需账号。
 
 ## 下载
 
@@ -48,7 +48,7 @@ dotnet build .\AppLauncher.sln -c Release --no-restore
 dotnet publish .\AppLauncher.csproj -c Release -r win-x64 --self-contained true
 ```
 
-ARM64 包将 `-r win-x64` 改为 `-r win-arm64`。构建产物和本机运行数据不会加入 Git。
+ARM64 包将 `-r win-x64` 改为 `-r win-arm64`。
 
 ## 日常操作
 
@@ -95,7 +95,7 @@ ARM64 包将 `-r win-x64` 改为 `-r win-arm64`。构建产物和本机运行数
 
 ## 本地数据与隐私
 
-AppLauncher 以本地运行为主：没有账号、遥测、自动更新服务或上传功能。源码中没有用于向外发送数据的网络客户端。应用发现只读取 Windows 本地位置。
+AppLauncher 在本机发现应用，并在本机保存索引、设置和日志，不包含遥测或数据上传功能。
 
 运行数据保存在 `%APPDATA%\AppLauncher`：
 
@@ -104,16 +104,14 @@ AppLauncher 以本地运行为主：没有账号、遥测、自动更新服务�
 - `icons_clean\` —— 从本机应用提取的图标。
 - `crash.log`、`diagnostic.log` —— 本地故障排查记录；每个文件自动限制为 1 MiB，并最多保留一个轮转副本。
 
-这些文件不在源码仓库或 Release ZIP 中。若要删除设置，请退出 AppLauncher 后手动删除该文件夹。升级时只需替换解压后的程序目录，`%APPDATA%\AppLauncher` 中的数据不会被移动或覆盖。
+退出 AppLauncher 后，可通过删除该文件夹清除设置。升级时只需替换解压后的程序目录；运行数据继续保存在 `%APPDATA%\AppLauncher`。
 
 ## 版本说明
 
-这是一个为了分享顺手工具而制作的小型本地启动器。本版本已在 Windows 11 x64 上完成人工验收。Windows 10 和 ARM64 已完成交叉构建与压缩包检查，但本项目尚未进行实体硬件实测。固定到任务栏也可能受到 Windows 策略和系统 Shell 支持影响。
+本版本已在 Windows 11 x64 上完成人工验收；Windows 10 和 ARM64 已完成交叉构建与压缩包检查。固定到任务栏取决于 Windows 策略和系统 Shell 支持。
 
 请通过仓库的 [Issues](https://github.com/iZoy/AppLauncher/issues) 页面报告可复现问题。附加日志前，请先删除用户名、应用路径和其他本机信息。
 
-AppLauncher 受到桌面应用启动器启发，与 Apple Inc. 没有关联。本项目不分发 Apple 的字体、图标、截图或代码。
-
 ## 许可证
 
-AppLauncher 使用 [MIT License](LICENSE) 发布。项目图标为本项目原创素材。便携压缩包还会包含适用的 .NET Runtime 许可证和第三方声明。
+AppLauncher 使用 [MIT License](LICENSE) 发布。便携压缩包还会包含适用的 .NET Runtime 许可证和第三方声明。

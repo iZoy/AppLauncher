@@ -4,7 +4,7 @@
 
 > 中文说明：[README.zh-CN.md](README.zh-CN.md)
 
-AppLauncher gives you a fast keyboard- and mouse-driven way to find and start applications without maintaining a catalog or account. It scans local Windows application locations, keeps the index locally, and stays out of the way in the notification area.
+AppLauncher is a lightweight Windows application launcher for finding and starting local applications with the keyboard or mouse, with no account required.
 
 ## Download
 
@@ -47,7 +47,7 @@ To create a self-contained x64 package locally:
 dotnet publish .\AppLauncher.csproj -c Release -r win-x64 --self-contained true
 ```
 
-The ARM64 package uses the same command with `-r win-arm64`. Build outputs and local application data are intentionally excluded from Git.
+The ARM64 package uses the same command with `-r win-arm64`.
 
 ## Everyday operation
 
@@ -94,7 +94,7 @@ The launcher remains visible while a selection or rename dialog is open.
 
 ## Local data and privacy
 
-AppLauncher is local-first. It has no account, telemetry, automatic update service, or upload feature. The source contains no network client for sending your data anywhere. Application discovery reads local Windows locations only.
+AppLauncher discovers applications locally and stores its index, settings, and logs on the device, with no telemetry or data upload features.
 
 Runtime data is stored under `%APPDATA%\AppLauncher`:
 
@@ -103,16 +103,14 @@ Runtime data is stored under `%APPDATA%\AppLauncher`:
 - `icons_clean\` — extracted local application icons.
 - `crash.log` and `diagnostic.log` — local troubleshooting records, automatically limited to 1 MiB each with one rotated copy.
 
-These files are not part of the source repository or Release ZIP. To remove your settings, exit AppLauncher and delete that folder manually. To upgrade, replace the extracted program folder; your `%APPDATA%\AppLauncher` data is left in place.
+To clear your settings, exit AppLauncher and delete this folder. To upgrade, replace the extracted program folder; runtime data remains under `%APPDATA%\AppLauncher`.
 
 ## Release notes
 
-This is a small, local-first utility shared for convenience. Windows 11 x64 is the manually verified platform for this release. Windows 10 and ARM64 are cross-built and package-checked, but have not been hardware-tested in this project. Taskbar pinning can also depend on Windows policy and shell support.
+This release was manually verified on Windows 11 x64; Windows 10 and ARM64 received cross-build and package checks. Taskbar pinning depends on Windows policy and shell support.
 
 Please report reproducible problems through the repository's [Issues](https://github.com/iZoy/AppLauncher/issues) page. Before attaching logs, remove usernames, application paths, and other local details.
 
-AppLauncher is inspired by desktop application launchers and is not affiliated with Apple Inc. The project does not distribute Apple fonts, icons, screenshots, or code.
-
 ## License
 
-AppLauncher is released under the [MIT License](LICENSE). The project icon is original to this project. The portable packages also contain the applicable .NET runtime license and third-party notices.
+AppLauncher is released under the [MIT License](LICENSE). The portable packages also contain the applicable .NET runtime license and third-party notices.
