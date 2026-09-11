@@ -1,0 +1,41 @@
+## Visual Studio & .NET Build Artifacts
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*_wpftmp.csproj
+.vs/
+.idea/
+.vscode/
+
+## Publish Output
+publish/
+release/
+artifacts/
+*.zip
+SHA256SUMS.txt
+
+## Local data backups
+*.backup-*/
+
+## AppLauncher runtime data
+**/config.json
+**/app_cache.json
+**/icons_clean/
+**/crash.log
+**/diagnostic.log
+**/crash.previous.log
+**/diagnostic.previous.log
+
+## Operating System Metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## Log & Crash dumps
+*.log
+*.dmp

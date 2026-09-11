@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to package for the dry run (for example, 1.0.0)
+        required: true
+        default: 1.0.0
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [win-x64, win-arm64]
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish and validate package
+        shell: pwsh
+        env:
+          RID: ${{ matrix.rid }}
+          VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:VERSION -match '^v') { $env:VERSION = $env:VERSION.Substring(1) }
+          if ($env:VERSION -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Version must be three numeric components: $env:VERSION"
+          }
+          & .\scripts\Package-Release.ps1 -Version $env:VERSION -Rid $env:RID -OutputRoot (Join-Path $env:RUNNER_TEMP 'AppLauncher-packages')
+          if ($LASTEXITCODE -ne 0) { throw "Package script failed for $env:RID" }
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.rid }}
+          path: ${{ runner.temp }}/AppLauncher-packages/AppLauncher-v*-${{ matrix.rid }}.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  package-assets:
+    name: Assemble checksums
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: package-*
+          merge-multiple: true
+
+      - name: Generate and verify checksums
+        shell: pwsh
+        env:
+          VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = $env:VERSION -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid version: $version" }
+          $expected = @(
+            "AppLauncher-v$version-win-arm64.zip",
+            "AppLauncher-v$version-win-x64.zip"
+          )
+          $zips = @(Get-ChildItem -LiteralPath 'release-assets' -Filter '*.zip' -File | Sort-Object Name)
+          if ($zips.Count -ne 2 -or (@($zips.Name | Sort-Object) -join '|') -ne (($expected | Sort-Object) -join '|')) {
+            throw "Expected exactly the x64 and ARM64 ZIP packages; found $($zips.Name -join ', ')"
+          }
+          $sums = $zips | ForEach-Object {
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)"
+          }
+          $sums | Set-Content -Encoding ascii 'release-assets/SHA256SUMS.txt'
+          foreach ($line in @(Get-Content -LiteralPath 'release-assets/SHA256SUMS.txt')) {
+            $parts = $line -split '  ', 2
+            $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path 'release-assets' $parts[1])).Hash.ToLowerInvariant()
+            if ($actual -ne $parts[0]) { throw "Checksum verification failed for $($parts[1])" }
+          }
+
+      - name: Upload release assets for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ github.run_id }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Create GitHub Release
+    if: github.event_name == 'push'
+    needs: package-assets
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets-${{ github.run_id }}
+          path: release-assets
+
+      - name: Create GitHub Release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:TAG -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Release tags must match vMAJOR.MINOR.PATCH: $env:TAG"
+          }
+          $files = Get-ChildItem -LiteralPath 'release-assets' -File | Sort-Object Name | ForEach-Object FullName
+          $args = @('release', 'create', $env:TAG) + $files + @('--repo', 'iZoy/AppLauncher', '--verify-tag', '--title', "AppLauncher $env:TAG", '--generate-notes')
+          gh @args
+          if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed for $env:TAG" }
